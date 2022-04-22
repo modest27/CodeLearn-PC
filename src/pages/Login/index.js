@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
 import { Card, Form, Input, Button, Checkbox, message } from 'antd'
-import './index.scss'
+import styles from './index.module.scss'
 import logo from 'assets/logo.png'
 import { login } from 'api/user'
+import { setToken } from 'utils/storage'
+
 export default class Login extends Component {
   state = {
     // 加载状态
@@ -10,7 +12,7 @@ export default class Login extends Component {
   }
   render() {
     return (
-      <div className="login">
+      <div className={styles.login}>
         <Card className="login-container">
           <img src={logo} alt="" className="login-logo" />
           {/* 表单 */}
@@ -100,9 +102,15 @@ export default class Login extends Component {
       // 3. 提示消息
       message.success('登录成功', 1, () => {
         // 1. 保存token
-        localStorage.setItem('token', res.data.token)
+        // localStorage.setItem('token', res.data.token)
+        setToken(res.data.token)
         // 2. 跳转到首页
-        this.props.history.push('/home')
+        const { state } = this.props.location
+        if (state) {
+          this.props.history.push(state.from)
+        } else {
+          this.props.history.push('/home')
+        }
       })
     } catch (error) {
       // console.dir(error)

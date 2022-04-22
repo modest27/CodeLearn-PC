@@ -5,6 +5,7 @@
   background-image: url('~assets/login.png');
   background-size: cover;
   position: relative;
+ :global{
   .login-container {
     width: 440px;
     height: 360px;
@@ -20,4 +21,5 @@
     display: block;
     margin: 0 auto 20px;
   }
+ }
 }

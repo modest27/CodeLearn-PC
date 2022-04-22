@@ -12,7 +12,15 @@ export const login = (mobile, code) => {
     url: '/authorizations',
     data: {
       mobile,
-      code,
-    },
+      code
+    }
+  })
+}
+
+// 获取用户信息接口
+export const getUserProfile = () => {
+  return request({
+    method: 'GET',
+    url: '/user/profile'
   })
 }
