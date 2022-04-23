@@ -55,7 +55,8 @@ export default class LayoutComponent extends Component {
             </Sider>
             <Layout
               style={{
-                padding: '24px'
+                padding: '24px',
+                overflow: 'auto'
               }}
             >
               <Content className="site-layout-background">
