@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
 import styles from './index.module.scss'
-import { Card, Breadcrumb, Form, Radio, Button, Select, DatePicker, Table } from 'antd'
+import { Card, Breadcrumb, Form, Radio, Button, Select, DatePicker, Table, Tag, Space, Modal, message } from 'antd'
 import { Link } from 'react-router-dom'
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
 import { ArticleStatus } from 'api/constants'
 import { getChannels } from 'api/channel'
-import { getArticles } from 'api/article'
+import { delArticle, getArticles } from 'api/article'
 import defaultImg from 'assets/error.png'
 const { Option } = Select
 
@@ -28,7 +29,11 @@ export default class ArticleList extends Component {
     },
     {
       title: '状态',
-      dataIndex: 'status'
+      dataIndex: 'status',
+      render(status) {
+        const obj = ArticleStatus.find(item => item.id === status)
+        return <Tag color={obj.color}>{obj.name}</Tag>
+      }
     },
     {
       title: '发布时间',
@@ -50,16 +55,30 @@ export default class ArticleList extends Component {
       dataIndex: 'like_count'
     },
     {
-      title: '操作'
+      title: '操作',
+      render: data => {
+        return (
+          <Space>
+            <Button type="primary" shape="circle" icon={<EditOutlined />} />
+            <Button type="primary" danger shape="circle" icon={<DeleteOutlined />} onClick={() => this.handleDelete(data.id)} />
+          </Space>
+        )
+      }
     }
   ]
+
+  // 用于存放查询文章列表的参数
+  reqParams = {
+    page: 1,
+    per_page: 10
+  }
 
   state = {
     channels: [],
     articles: {}
   }
   render() {
-    const { total_count, results } = this.state.articles
+    const { total_count, results, per_page, page } = this.state.articles
     return (
       <div className={styles.root}>
         <Card
@@ -113,10 +132,39 @@ export default class ArticleList extends Component {
         </Card>
 
         <Card title={`根据查询结果查询到了 ${total_count} 条结果：`}>
-          <Table columns={this.columns} dataSource={results} rowKey="id" />;
+          <Table
+            columns={this.columns}
+            dataSource={results}
+            rowKey="id"
+            pagination={{
+              position: ['bottomCenter'],
+              total: total_count,
+              pageSize: per_page,
+              current: page,
+              onChange: this.onChange
+            }}
+          />
+          ;
         </Card>
       </div>
     )
+  }
+
+  handleDelete = id => {
+    // 弹出弹框
+    Modal.confirm({
+      title: '温馨提示',
+      icon: <ExclamationCircleOutlined />,
+      content: '您确定删除这篇文章吗?',
+      onOk: async () => {
+        // 发送请求，删除文章
+        await delArticle(id)
+        // 重新获取文章渲染
+        this.getArticleList()
+        // 提示删除成功
+        message.success('删除成功', 1)
+      }
+    })
   }
 
   componentDidMount() {
@@ -132,13 +180,39 @@ export default class ArticleList extends Component {
   }
 
   async getArticleList() {
-    const res = await getArticles()
+    const res = await getArticles(this.reqParams)
     this.setState({
       articles: res.data
     })
   }
 
-  onFinish = value => {
-    console.log(value)
+  onFinish = ({ status, channel_id, date }) => {
+    if (status !== -1) {
+      this.reqParams.status = status
+    } else {
+      delete this.reqParams.status
+    }
+    if (channel_id !== undefined) {
+      this.reqParams.channel_id = channel_id
+    } else {
+      delete this.reqParams.channel_id
+    }
+    if (date) {
+      this.reqParams.begin_pubdate = date[0].startOf('day').format('YYYY-MM-DD HH:mm:ss')
+      this.reqParams.end_pubdate = date[1].endOf('day').format('YYYY-MM-DD HH:mm:ss')
+    } else {
+      delete this.reqParams.begin_pubdate
+      delete this.reqParams.end_pubdate
+    }
+    // 查询操作，需要将页码值重新赋为1
+    this.reqParams.page = 1
+    // 重新发起请求
+    this.getArticleList()
+  }
+
+  onChange = (page, pageSize) => {
+    this.reqParams.page = page
+    this.reqParams.per_page = pageSize
+    this.getArticleList()
   }
 }
