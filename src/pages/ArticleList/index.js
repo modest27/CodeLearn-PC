@@ -1,14 +1,13 @@
 import React, { Component } from 'react'
 import styles from './index.module.scss'
-import { Card, Breadcrumb, Form, Radio, Button, Select, DatePicker, Table, Tag, Space, Modal, message } from 'antd'
+import { Card, Breadcrumb, Form, Radio, Button, DatePicker, Table, Tag, Space, Modal, message } from 'antd'
 import { Link } from 'react-router-dom'
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
 import { ArticleStatus } from 'api/constants'
-import { getChannels } from 'api/channel'
+import Channel from 'components/Channel'
 import { delArticle, getArticles } from 'api/article'
 import defaultImg from 'assets/error.png'
-const { Option } = Select
 
 export default class ArticleList extends Component {
   columns = [
@@ -74,7 +73,6 @@ export default class ArticleList extends Component {
   }
 
   state = {
-    channels: [],
     articles: {}
   }
   render() {
@@ -108,15 +106,7 @@ export default class ArticleList extends Component {
             </Form.Item>
 
             <Form.Item label="频道" name="channel_id">
-              <Select style={{ width: 200 }} placeholder="请选择文章频道">
-                {this.state.channels.map(item => {
-                  return (
-                    <Option value={item.id} key={item.id}>
-                      {item.name}
-                    </Option>
-                  )
-                })}
-              </Select>
+              <Channel></Channel>
             </Form.Item>
 
             <Form.Item label="日期" name="">
@@ -168,15 +158,7 @@ export default class ArticleList extends Component {
   }
 
   componentDidMount() {
-    this.getChannelList()
     this.getArticleList()
-  }
-
-  async getChannelList() {
-    const res = await getChannels()
-    this.setState({
-      channels: res.data.channels
-    })
   }
 
   async getArticleList() {

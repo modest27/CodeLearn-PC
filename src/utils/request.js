@@ -4,8 +4,9 @@ import { message } from 'antd'
 import history from './history'
 
 // 创建axios实例
+export const baseURL = 'http://geek.itheima.net/v1_0/'
 const instance = axios.create({
-  baseURL: 'http://geek.itheima.net/v1_0/',
+  baseURL,
   timeout: 5000
 })
 
@@ -32,6 +33,10 @@ instance.interceptors.response.use(
     return response.data
   },
   function (error) {
+    if (!error.response) {
+      message.warning('网络繁忙，请稍后重试')
+      return Promise.reject('网络繁忙，请稍后重试')
+    }
     // 对响应错误做点什么
     if (error.response.status === 401) {
       // token过期
