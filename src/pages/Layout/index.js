@@ -6,9 +6,13 @@ import { LogoutOutlined, HomeOutlined, DiffOutlined, EditOutlined } from '@ant-d
 import { removeToken } from 'utils/storage'
 import { getUserProfile } from 'api/user'
 
-import Home from 'pages/Home'
-import ArticleList from 'pages/ArticleList'
-import ArticlePublish from 'pages/ArticlePublish'
+// import Home from 'pages/Home'
+// import ArticleList from 'pages/ArticleList'
+// import ArticlePublish from 'pages/ArticlePublish'
+
+const Home = React.lazy(() => import('pages/Home'))
+const ArticleList = React.lazy(() => import('pages/ArticleList'))
+const ArticlePublish = React.lazy(() => import('pages/ArticlePublish'))
 
 const { Header, Content, Sider } = Layout
 
