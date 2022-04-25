@@ -14,7 +14,8 @@ const { Header, Content, Sider } = Layout
 
 export default class LayoutComponent extends Component {
   state = {
-    profile: {}
+    profile: {},
+    selectedKey: this.props.location.pathname
   }
   render() {
     return (
@@ -33,9 +34,11 @@ export default class LayoutComponent extends Component {
           </Header>
           <Layout>
             <Sider width={200}>
+              {/* 如果菜单不会改变，就用defaultSelectedKeys
+              如果菜单会改变，就用selectedKeys */}
               <Menu
                 mode="inline"
-                defaultSelectedKeys={[this.props.location.pathname]}
+                selectedKeys={[this.state.selectedKey]}
                 style={{
                   height: '100%',
                   borderRight: 0
@@ -63,7 +66,10 @@ export default class LayoutComponent extends Component {
                 <Switch>
                   <Route exact path="/home" component={Home}></Route>
                   <Route path="/home/list" component={ArticleList}></Route>
-                  <Route path="/home/publish" component={ArticlePublish}></Route>
+                  {/* 新增文章路由 */}
+                  <Route exact path="/home/publish" component={ArticlePublish} key="add"></Route>
+                  {/* 修改文章的路由 */}
+                  <Route path="/home/publish/:id" component={ArticlePublish} key="edit"></Route>
                 </Switch>
               </Content>
             </Layout>
@@ -71,6 +77,19 @@ export default class LayoutComponent extends Component {
         </Layout>
       </div>
     )
+  }
+
+  // 组件更新后，重新改变菜单默认值
+  componentDidUpdate(preprops) {
+    let pathname = this.props.location.pathname
+    if (this.props.location.pathname !== preprops.location.pathname) {
+      if (pathname.startsWith('/home/publish')) {
+        pathname = '/home/publish'
+      }
+      this.setState({
+        selectedKey: pathname
+      })
+    }
   }
 
   // 发起请求获取用户信息

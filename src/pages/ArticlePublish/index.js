@@ -8,7 +8,7 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 
 import { baseURL } from 'utils/request'
-import { addArticle } from 'api/article'
+import { addArticle, getArticleById, updateArticle } from 'api/article'
 
 export default class Articlepublish extends Component {
   state = {
@@ -16,11 +16,12 @@ export default class Articlepublish extends Component {
     // 用于控制上传的图片以及图片的显示
     fileList: [],
     showProview: false,
-    previewUrl: ''
+    previewUrl: '',
+    id: this.props.match.params.id
   }
   formRef = React.createRef()
   render() {
-    const { type, fileList, showProview, previewUrl } = this.state
+    const { type, fileList, showProview, previewUrl, id } = this.state
     return (
       <div className={styles.root}>
         <Card
@@ -30,7 +31,7 @@ export default class Articlepublish extends Component {
                 <Link to="/home">首页</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <a href="">发布文章</a>
+                <a href="">{id ? '编辑文章' : '发布文章'}</a>
               </Breadcrumb.Item>
             </Breadcrumb>
           }
@@ -92,7 +93,7 @@ export default class Articlepublish extends Component {
             <Form.Item wrapperCol={{ offset: 4 }}>
               <Space>
                 <Button type="primary" htmlType="submit" size="large">
-                  发布文章
+                  {id ? '编辑文章' : '发布文章'}
                 </Button>
                 <Button size="large" onClick={this.addDraft}>
                   存入草稿
@@ -107,6 +108,28 @@ export default class Articlepublish extends Component {
         </Modal>
       </div>
     )
+  }
+
+  async componentDidMount() {
+    // 判断是否有id，然后看发起请求获取文章详情
+    if (this.state.id) {
+      const res = await getArticleById(this.state.id)
+      // 给表单设置values值
+      const values = {
+        ...res.data,
+        type: res.data.cover.type
+      }
+      this.formRef.current.setFieldsValue(res.data)
+      const fileList = res.data.cover.images.map(item => {
+        return {
+          url: item
+        }
+      })
+      this.setState({
+        fileList,
+        type: res.data.cover.type
+      })
+    }
   }
 
   // 上传前的校验
@@ -167,17 +190,36 @@ export default class Articlepublish extends Component {
     const images = fileList.map(item => {
       return item.url || item.response.data.url
     })
-    await addArticle(
-      {
-        ...values,
-        cover: {
-          type,
-          images
-        }
-      },
-      draft
-    )
-    message.success('添加成功')
+    // 判断是修改文章还是添加文章
+    if (this.state.id) {
+      // 有id是修改文章
+      await updateArticle(
+        {
+          ...values,
+          cover: {
+            type,
+            images
+          },
+          id: this.state.id
+        },
+        draft
+      )
+      message.success('编辑成功', 1)
+    } else {
+      // 没有id添加文章
+      await addArticle(
+        {
+          ...values,
+          cover: {
+            type,
+            images
+          }
+        },
+        draft
+      )
+      message.success('添加成功', 1)
+    }
+
     this.props.history.push('/home/list')
   }
   // 表单提交事件

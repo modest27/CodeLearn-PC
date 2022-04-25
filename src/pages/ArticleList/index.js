@@ -58,7 +58,7 @@ export default class ArticleList extends Component {
       render: data => {
         return (
           <Space>
-            <Button type="primary" shape="circle" icon={<EditOutlined />} />
+            <Button type="primary" shape="circle" icon={<EditOutlined />} onClick={() => this.handleEdit(data.id)} />
             <Button type="primary" danger shape="circle" icon={<DeleteOutlined />} onClick={() => this.handleDelete(data.id)} />
           </Space>
         )
@@ -138,6 +138,11 @@ export default class ArticleList extends Component {
         </Card>
       </div>
     )
+  }
+
+  // 修改文章按钮
+  handleEdit = id => {
+    this.props.history.push(`/home/publish/${id}`)
   }
 
   handleDelete = id => {

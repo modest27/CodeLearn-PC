@@ -24,3 +24,20 @@ export function addArticle(data, draft = false) {
     data
   })
 }
+
+// 获取文章详情接口
+export function getArticleById(id) {
+  return request({
+    method: 'GET',
+    url: `/mp/articles/${id}`
+  })
+}
+
+// 修改文章接口
+export function updateArticle(data, draft = false) {
+  return request({
+    method: 'PUT',
+    url: `/mp/articles/${data.id}?draft=${draft}`,
+    data
+  })
+}
